@@ -62,7 +62,7 @@ model products {
   orders_details orders_details[]
   categories     categories?      @relation(fields: [cat_id], references: [id], map: "products_ibfk_1")
 
-  @@index([description], map: "description")
+  @@index([description(length: 100)], map: "description")
   @@index([cat_id], map: "products_ibfk_1")
 }
 

@@ -57,8 +57,8 @@ const createUser = async (req, res) => {
     } else {
       // let passchange = pars
       console.log(typeof password);
-      const token = jwt.sign({ username, email }, "your_secret_key");
-      console.log(token);
+      // const token = jwt.sign({ username, email }, "your_secret_key");
+      // console.log(token);
       const passok = await bcrypt.hash(password, 10);
       console.log(passok);
       const datauser = await prisma.users.create({
@@ -66,7 +66,6 @@ const createUser = async (req, res) => {
           username,
           password: passok,
           email,
-          token,
         },
       });
       console.log(datauser);
