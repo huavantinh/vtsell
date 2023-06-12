@@ -1,0 +1,82 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model addresses {
+  id      Int     @id @default(autoincrement())
+  line1   String? @db.VarChar(255)
+  line2   String? @db.VarChar(255)
+  city    String? @db.VarChar(45)
+  state   String? @db.VarChar(45)
+  country String? @db.VarChar(45)
+  phone   String? @db.VarChar(10)
+  pincode Int?
+  user_id Int
+  users   users   @relation(fields: [user_id], references: [id], onDelete: Cascade, map: "fk_addresses_users1")
+
+  @@index([user_id], map: "fk_addresses_users1_idx")
+}
+
+model categories {
+  id       Int        @id @default(autoincrement())
+  title    String     @db.VarChar(255)
+  products products[]
+}
+
+model orders {
+  id             Int              @id @default(autoincrement())
+  user_id        Int
+  users          users            @relation(fields: [user_id], references: [id], onDelete: Cascade, map: "users")
+  orders_details orders_details[]
+
+  @@index([user_id], map: "fk_orders_users1_idx")
+}
+
+model orders_details {
+  id         Int      @id @default(autoincrement())
+  order_id   Int
+  product_id Int
+  quantity   Int      @default(1)
+  orders     orders   @relation(fields: [order_id], references: [id], onDelete: Cascade, map: "fk_orders_has_products_orders1")
+  products   products @relation(fields: [product_id], references: [id], onDelete: Cascade, map: "fk_orders_has_products_products1")
+
+  @@index([order_id], map: "fk_orders_has_products_orders1_idx")
+  @@index([product_id], map: "fk_orders_has_products_products1_idx")
+}
+
+model products {
+  id             Int              @id @default(autoincrement())
+  title          String           @db.VarChar(255)
+  image          String           @db.VarChar(255)
+  images         String?          @db.Text
+  description    String           @db.Text
+  price          Float            @db.Float
+  quantity       Int
+  short_desc     String           @db.VarChar(255)
+  cat_id         Int?
+  orders_details orders_details[]
+  categories     categories?      @relation(fields: [cat_id], references: [id], map: "products_ibfk_1")
+  // @@index([description], map: "description")
+
+  @@index([cat_id], map: "products_ibfk_1")
+}
+
+model users {
+  id        Int         @id @default(autoincrement())
+  username  String      @db.VarChar(255)
+  password  String      @db.VarChar(255)
+  email     String      @db.VarChar(255)
+  fname     String?     @default("not set") @db.VarChar(255)
+  lname     String?     @default("not set") @db.VarChar(255)
+  age       Int?        @default(18)
+  role      Int?        @default(555)
+  photoUrl  String?     @db.Text
+  type      String      @default("local") @db.VarChar(255)
+  addresses addresses[]
+  orders    orders[]
+}
