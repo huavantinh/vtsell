@@ -1,0 +1,19 @@
+{
+	"folders": [
+		{
+			"path": "../../../cyber-ex"
+		},
+		{
+			"path": "../../../../khóa hoc JS/Nodejs Trợ Cybersoft/BUỔI 8.JWT & SWAGGER-20230428T075813Z-001/BUỔI 8.JWT _ SWAGGER/Source Code/node28_upload/src/swagger"
+		},
+		{
+			"path": ".."
+		},
+		{
+			"path": "../../../sumscoregame"
+		}
+	],
+	"settings": {
+		"liveServer.settings.multiRootWorkspaceName": "sumscoregame"
+	}
+}

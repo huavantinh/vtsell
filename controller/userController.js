@@ -2,7 +2,6 @@ const { PrismaClient } = require("@prisma/client");
 const bcrypt = require("bcrypt");
 const { type } = require("express/lib/response");
 const jwt = require("jsonwebtoken");
-
 const prisma = new PrismaClient();
 
 // const { parse } = require("dotenv");
@@ -87,14 +86,23 @@ const login = async (req, res) => {
       let checkpass = await bcrypt.compareSync(password, checkuser.password);
 
       if (checkpass) {
-        console.log(checkpass);
-        return res.status(200).send(checkuser);
+        //set token
+        const token = jwt.sign({ email, password }, "secret key", {
+          expiresIn: "1h",
+        });
+        // set save cookie
+        const cookieOptions = {
+          maxAge: 1000 * 60 * 60, // Thời gian sống của cookie (1 giờ)
+          httpOnly: true, // Chỉ cho phép cookie được truy cập qua HTTP và không qua JavaScript
+          signed: true, // Ký hiệu cookie để bảo mật
+        };
+        return res.cookie("myCookie", token, cookieOptions).send(token);
       }
       return res.send("wrong password");
     }
     return res.send("email wrong");
   } catch (error) {
-    res.send("error BE: ");
+    res.send(error.message);
   }
 };
 
