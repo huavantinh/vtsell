@@ -77,6 +77,7 @@ model users {
   role      Int?        @default(555)
   photoUrl  String?     @db.Text
   type      String      @default("local") @db.VarChar(255)
+  usertoken String?     @db.VarChar(255)
   addresses addresses[]
   orders    orders[]
 }

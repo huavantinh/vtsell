@@ -3,7 +3,7 @@ const bcrypt = require("bcrypt");
 const { type } = require("express/lib/response");
 const jwt = require("jsonwebtoken");
 const prisma = new PrismaClient();
-
+const cookieOptions = require("../midleware/authen");
 // const { parse } = require("dotenv");
 //get all user
 const getallUser = async (req, res) => {
@@ -52,26 +52,39 @@ const createUser = async (req, res) => {
       },
     });
     if (olduser) {
-      return res.send("User created");
+      return res.send("User already exists");
     } else {
-      // let passchange = pars
-      console.log(typeof password);
-      // const token = jwt.sign({ username, email }, "your_secret_key");
-      // console.log(token);
+      // Tạo token
       const passok = await bcrypt.hash(password, 10);
-      console.log(passok);
       const datauser = await prisma.users.create({
         data: {
           username,
           password: passok,
           email,
+          // usertoken: " ",
+          age: 36,
         },
       });
       console.log(datauser);
-      return res.send(datauser);
+      let userid = datauser.id;
+      const token = await jwt.sign({ email, userid }, "secret key", {
+        expiresIn: "1h",
+      });
+      console.log(token);
+      //lưu token db
+      await prisma.users.update({
+        where: { id: userid },
+        data: { usertoken: token },
+      });
+      // Lưu token vào cookie
+      console.log(req.headers.authorization);
+      res.cookie("myCookie", token, cookieOptions);
+
+      return res.send(token);
     }
   } catch (error) {
     console.error(error);
+
     return res.status(500).send("Error BE");
   }
 };
@@ -79,24 +92,12 @@ const createUser = async (req, res) => {
 //login user
 const login = async (req, res) => {
   try {
-    let email = req.body.email;
-    let password = req.body.password;
+    let { email, password } = req.body;
     let checkuser = await prisma.users.findFirst({ where: { email } });
     if (checkuser) {
       let checkpass = await bcrypt.compareSync(password, checkuser.password);
-
       if (checkpass) {
-        //set token
-        const token = jwt.sign({ email, password }, "secret key", {
-          expiresIn: "1h",
-        });
-        // set save cookie
-        const cookieOptions = {
-          maxAge: 1000 * 60 * 60, // Thời gian sống của cookie (1 giờ)
-          httpOnly: true, // Chỉ cho phép cookie được truy cập qua HTTP và không qua JavaScript
-          signed: true, // Ký hiệu cookie để bảo mật
-        };
-        return res.cookie("myCookie", token, cookieOptions).send(token);
+        return res.send(token);
       }
       return res.send("wrong password");
     }
@@ -106,57 +107,12 @@ const login = async (req, res) => {
   }
 };
 
-//forgot password
-
-//tim hieu viet delete user duplicate .
-const deleteUserdup = async (req, res) => {
-  res.send("chua viet, dang loi");
+//logout
+const logoutuser = async (req, res) => {
+  res.send("api.logout");
 };
-// const deleteUserdup = async (req, res) => {
-//   let email = req.body.email;
-//   // var firstuser = await prisma.users.findFirst({ where: { email } });
-//   let userdup = await prisma.users.findMany({ where: { email } });
-//   const firstUser = userdup[0];
-//   userdup.splice(1);
 
-//   const deleteUsers = await prisma.users.deleteMany({
-//     where: {
-//       email: {
-//         contains: "prisma.io",
-//       },
-//     },
-//   });
-// };
-
-// const deleteUserdup = async () => {
-//   const users = await prisma.users.findMany();
-
-//   const duplicateEmails = new Set();
-//   const usersToDelete = [];
-
-//   for (const user of users) {
-//     if (duplicateEmails.has(user.email)) {
-//       usersToDelete.push(user.id);
-//     } else {
-//       duplicateEmails.add(user.email);
-//     }
-//   }
-
-//   // Lưu trữ ID của người dùng đầu tiên
-//   const firstUserId = users[0].id;
-
-//   if (usersToDelete.length > 0) {
-//     await prisma.users.deleteMany({
-//       where: {
-//         id: {
-//           in: usersToDelete,
-//         },
-//       },
-//     });
-//   }
-
-//   return firstUserId;
-// };
+//forgot password
 
 module.exports = {
   getallUser,
@@ -164,5 +120,5 @@ module.exports = {
   editUser,
   getuserID,
   login,
-  deleteUserdup,
+  logoutuser,
 };
