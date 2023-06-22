@@ -17,3 +17,11 @@ app.use("/api/orders", orderRouter);
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
 });
+
+// cổng thành viên
+// mua hàng theo điều kiện
+// Mã giảm giá
+// tính phí ship
+// check sp đã xem ,
+//  sản phẩm cùng loại
+// có cả cổng thanh toán
